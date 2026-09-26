@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  color-scheme: dark;
+  font-family: 'Manrope', system-ui, sans-serif;
+  background: #090b0e;
+  color: #f3f4f0;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+button, input, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { color: inherit; }
+
+body {
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 82% -20%, rgba(197, 246, 77, 0.08), transparent 35%),
+    #090b0e;
+}
+
+::selection { background: rgba(198, 245, 79, 0.28); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #0c0e11; }
+::-webkit-scrollbar-thumb { background: #30343b; border-radius: 99px; }
+

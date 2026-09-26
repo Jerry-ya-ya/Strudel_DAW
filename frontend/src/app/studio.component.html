@@ -1,0 +1,146 @@
+<div class="studio-shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Strudel Studio home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>STRUDEL <b>STUDIO</b></span>
+    </a>
+    <div class="session-pill"><span></span> LOCAL SESSION</div>
+    <div class="top-actions">
+      <button class="ghost-button" type="button" (click)="showEmbed.set(!showEmbed())" [disabled]="!selectedId()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9-3 3 3 3M16 9l3 3-3 3M14 6l-4 12"/></svg>
+        Embed
+      </button>
+      <button class="primary-button" type="button" (click)="save()" [disabled]="busy() || !dirty()">
+        {{ busy() ? 'Working…' : 'Save pattern' }}
+      </button>
+      <div class="avatar" aria-hidden="true">S</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="library-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">LIBRARY</span>
+          <h1>Your patterns</h1>
+        </div>
+        <button class="icon-button add-button" type="button" (click)="newScore()" title="新增樂譜">+</button>
+      </div>
+
+      <label class="search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+        <input type="search" placeholder="Search patterns" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        <kbd>⌘ K</kbd>
+      </label>
+
+      <nav class="score-list" aria-label="樂譜清單">
+        @for (score of filteredScores(); track trackById($index, score)) {
+          <button
+            type="button"
+            class="score-item"
+            [class.active]="score.id === selectedId()"
+            (click)="select(score.id)"
+          >
+            <span class="score-icon" aria-hidden="true">
+              <i></i><i></i><i></i><i></i>
+            </span>
+            <span class="score-copy">
+              <strong>{{ score.name }}</strong>
+              <small>{{ score.bpm }} BPM · {{ formatDate(score.updatedAt) }}</small>
+            </span>
+            <span class="score-menu">•••</span>
+          </button>
+        } @empty {
+          <div class="empty-state">沒有符合的樂譜</div>
+        }
+      </nav>
+
+      <div class="library-footer">
+        <span><b>{{ scores().length }}</b> PATTERNS</span>
+        <span class="storage-dot"></span>
+        <span>LOCAL STORAGE</span>
+      </div>
+    </aside>
+
+    <main class="editor-panel">
+      <section class="score-header">
+        <div class="title-fields">
+          <input class="title-input" aria-label="樂譜名稱" [(ngModel)]="draft.name" (ngModelChange)="markDirty()" />
+          <input class="description-input" aria-label="樂譜說明" placeholder="Add a short description…" [(ngModel)]="draft.description" (ngModelChange)="markDirty()" />
+        </div>
+        <div class="score-actions">
+          <label class="bpm-control">BPM <input type="number" min="20" max="400" [(ngModel)]="draft.bpm" (ngModelChange)="markDirty()" /></label>
+          <button class="icon-button" type="button" title="建立副本" (click)="duplicate()">
+            <svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+          </button>
+          <button class="icon-button danger" type="button" title="刪除" [disabled]="!selectedId()" (click)="remove()">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5"/></svg>
+            @if (confirmDelete()) { <span class="confirm-tip">再按一次刪除</span> }
+          </button>
+        </div>
+      </section>
+
+      <section class="transport-card">
+        <div class="transport-controls">
+          <button class="play-button" type="button" (click)="play()" [disabled]="engine.state() === 'loading'" aria-label="播放">
+            <svg viewBox="0 0 24 24"><path d="m9 6 9 6-9 6Z"/></svg>
+          </button>
+          <button class="stop-button" type="button" (click)="stop()" aria-label="停止">
+            <span></span>
+          </button>
+          <div class="transport-status">
+            <span class="status-led" [class.live]="engine.state() === 'playing'"></span>
+            <div><strong>{{ engine.state() === 'playing' ? 'LIVE' : 'READY' }}</strong><small>{{ engine.message() }}</small></div>
+          </div>
+        </div>
+        <div class="time-display"><small>CYCLE</small><strong>{{ engine.state() === 'playing' ? '01.1' : '00.0' }}</strong></div>
+        <div class="meter" [class.active]="engine.state() === 'playing'" aria-hidden="true">
+          @for (bar of meterBars; track bar) { <i [style.--bar]="bar"></i> }
+        </div>
+        <div class="master"><small>MASTER</small><div class="master-track"><span></span></div><b>0.0</b></div>
+      </section>
+
+      <section class="code-card">
+        <div class="code-toolbar">
+          <div class="file-tab"><span></span> pattern.strudel @if (dirty()) { <b>•</b> }</div>
+          <div class="shortcut-hint">CTRL + ENTER <span>to evaluate</span></div>
+        </div>
+        <div class="editor-wrap">
+          <div class="line-numbers" aria-hidden="true">@for (line of draft.code.split('\n'); track $index) { <span>{{ $index + 1 }}</span> }</div>
+          <textarea
+            aria-label="Strudel 程式碼編輯器"
+            spellcheck="false"
+            [(ngModel)]="draft.code"
+            (ngModelChange)="markDirty()"
+            (keydown.control.enter)="play(); $event.preventDefault()"
+          ></textarea>
+        </div>
+        <div class="editor-statusbar">
+          <span><i></i> STRUDEL</span>
+          <span>UTF-8</span>
+          <span>Ln {{ draft.code.split('\n').length }}, Col 1</span>
+        </div>
+      </section>
+
+      @if (error()) { <div class="toast error-toast" role="alert">{{ error() }}</div> }
+      @if (notice()) { <div class="toast" role="status">{{ notice() }}</div> }
+    </main>
+  </div>
+
+  @if (showEmbed()) {
+    <div class="modal-backdrop" (click)="showEmbed.set(false)">
+      <section class="embed-modal" role="dialog" aria-modal="true" aria-labelledby="embed-title" (click)="$event.stopPropagation()">
+        <button class="modal-close" type="button" (click)="showEmbed.set(false)">×</button>
+        <span class="eyebrow">SHARE PLAYER</span>
+        <h2 id="embed-title">Embed this pattern</h2>
+        <p>將這段程式碼貼進任何支援 HTML 的頁面。播放器會即時載入目前儲存的版本。</p>
+        <pre>{{ embedCode() }}</pre>
+        <div class="modal-actions">
+          <a class="ghost-button" [href]="embedUrl()" target="_blank" rel="noopener">Open player ↗</a>
+          <button class="primary-button" type="button" (click)="copyEmbed()">Copy iframe</button>
+        </div>
+      </section>
+    </div>
+  }
+</div>
+

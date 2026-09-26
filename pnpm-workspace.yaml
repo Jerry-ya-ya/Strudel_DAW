@@ -1,0 +1,11 @@
+packages:
+  - frontend
+  - backend
+
+confirmModulesPurge: false
+packageImportMethod: copy
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true

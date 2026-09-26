@@ -1,0 +1,11 @@
+node_modules/
+.pnpm-store/
+.angular/
+dist/
+coverage/
+*.log
+.DS_Store
+.env
+
+# Runtime score storage (mounted as a Docker volume in production)
+backend/data/

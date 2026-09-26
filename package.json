@@ -1,0 +1,12 @@
+{
+  "name": "strudel-daw",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "dev": "pnpm --parallel --stream --filter ./frontend --filter ./backend dev",
+    "build": "pnpm --filter ./frontend build",
+    "test": "pnpm --filter ./backend test && pnpm --filter ./frontend test",
+    "start": "pnpm --filter ./backend start"
+  }
+}
