@@ -11,8 +11,16 @@ export class ScoreApiService {
     return this.http.get<ScoreSummary[]>('/api/scores');
   }
 
+  listGeneratedMusic(): Observable<ScoreSummary[]> {
+    return this.http.get<ScoreSummary[]>('/api/generated-music');
+  }
+
   get(id: string): Observable<Score> {
     return this.http.get<Score>(`/api/scores/${encodeURIComponent(id)}`);
+  }
+
+  getGeneratedMusic(slug: string): Observable<Score> {
+    return this.http.get<Score>(`/api/generated-music/${encodeURIComponent(slug)}`);
   }
 
   create(input: ScoreInput): Observable<Score> {

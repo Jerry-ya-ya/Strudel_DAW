@@ -35,6 +35,7 @@ export class StudioComponent implements OnInit {
 
   readonly scores = signal<ScoreSummary[]>([]);
   readonly selectedId = signal<string | null>(null);
+  readonly selectedLibraryId = signal<string | null>(null);
   readonly busy = signal(false);
   readonly dirty = signal(false);
   readonly notice = signal('');
@@ -52,6 +53,7 @@ export class StudioComponent implements OnInit {
       ? this.scores().filter((score) => `${score.name} ${score.description}`.toLocaleLowerCase().includes(term))
       : this.scores();
   });
+  readonly generatedCount = computed(() => this.scores().filter((score) => score.source === 'generated').length);
 
   readonly embedUrl = computed(() => {
     const id = this.selectedId();
@@ -74,7 +76,14 @@ export class StudioComponent implements OnInit {
     this.busy.set(true);
     this.error.set('');
     try {
-      this.scores.set(await firstValueFrom(this.api.list()));
+      const [savedScores, generatedSongs] = await Promise.all([
+        firstValueFrom(this.api.list()),
+        firstValueFrom(this.api.listGeneratedMusic())
+      ]);
+      this.scores.set([
+        ...savedScores.map((score) => ({ ...score, source: 'saved' as const })),
+        ...generatedSongs.map((song) => ({ ...song, source: 'generated' as const }))
+      ].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
     } catch (error) {
       this.fail(error, '無法讀取樂譜');
     } finally {
@@ -83,13 +92,18 @@ export class StudioComponent implements OnInit {
   }
 
   async select(id: string): Promise<void> {
-    if (this.dirty() && id !== this.selectedId() && !window.confirm('尚有未儲存變更，仍要切換嗎？')) return;
+    if (this.dirty() && id !== this.selectedLibraryId() && !window.confirm('尚有未儲存變更，仍要切換嗎？')) return;
     this.busy.set(true);
     this.error.set('');
     this.engine.stop();
     try {
-      const score = await firstValueFrom(this.api.get(id));
-      this.selectedId.set(score.id);
+      const item = this.scores().find((score) => score.id === id);
+      const isGenerated = item?.source === 'generated' || id.startsWith('generated:');
+      const score = isGenerated
+        ? await firstValueFrom(this.api.getGeneratedMusic(id.replace(/^generated:/, '')))
+        : await firstValueFrom(this.api.get(id));
+      this.selectedLibraryId.set(id);
+      this.selectedId.set(isGenerated ? null : score.id);
       this.draft = this.toInput(score);
       this.dirty.set(false);
       this.confirmDelete.set(false);
@@ -104,6 +118,7 @@ export class StudioComponent implements OnInit {
     if (this.dirty() && !window.confirm('尚有未儲存變更，仍要建立新樂譜嗎？')) return;
     this.engine.stop();
     this.selectedId.set(null);
+    this.selectedLibraryId.set(null);
     this.draft = { ...NEW_SCORE };
     this.dirty.set(true);
     this.notice.set('新樂譜尚未儲存');
@@ -124,6 +139,7 @@ export class StudioComponent implements OnInit {
         ? await firstValueFrom(this.api.update(id, this.draft))
         : await firstValueFrom(this.api.create(this.draft));
       this.selectedId.set(score.id);
+      this.selectedLibraryId.set(score.id);
       this.draft = this.toInput(score);
       this.dirty.set(false);
       this.notice.set('已儲存');
@@ -162,6 +178,7 @@ export class StudioComponent implements OnInit {
       this.engine.stop();
       await firstValueFrom(this.api.remove(id));
       this.selectedId.set(null);
+      this.selectedLibraryId.set(null);
       this.dirty.set(false);
       await this.refresh();
       const first = this.scores()[0];

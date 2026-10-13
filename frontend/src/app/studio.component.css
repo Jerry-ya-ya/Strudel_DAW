@@ -21,6 +21,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .workspace { min-height: calc(100vh - 72px); display: grid; grid-template-columns: 284px minmax(0,1fr); }
 .library-panel { display: flex; flex-direction: column; min-height: calc(100vh - 72px); border-right: 1px solid var(--line); background: rgba(12,14,17,.68); }
 .panel-heading { height: 103px; display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 14px; }
+.heading-actions { display: flex; gap: 7px; }
+.refresh-button { color: #8f969f; font-size: 20px; }
 .eyebrow { color: #6d747e; font: 500 9px 'DM Mono', monospace; letter-spacing: .18em; }
 .panel-heading h1 { margin: 6px 0 0; font-size: 17px; letter-spacing: -.02em; }
 .icon-button { width: 37px; height: 37px; border-radius: 8px; display: grid; place-items: center; position: relative; background: #16191e; border: 1px solid #2d3138; color: #aeb3ba; }

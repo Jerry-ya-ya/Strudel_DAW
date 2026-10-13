@@ -1,12 +1,14 @@
 import express from 'express';
-import { mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = join(currentDir, 'data', 'scores');
+const DEFAULT_GENERATED_MUSIC_DIR = join(currentDir, '..', 'generated-music');
 const ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const GENERATED_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 const starterScore = {
   name: 'Neon Pulse',
@@ -55,8 +57,69 @@ async function readScore(path) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
 
+function generatedSongMetadata(slug, code, analysis, updatedAt) {
+  const title = analysis.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? slug
+    .split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+  const description = analysis.match(/^\s*-\s*(?:曲風|Genre)\s*[：:]\s*(.+)$/im)?.[1]?.trim() ?? '';
+  const documentedBpm = analysis.match(/(\d+(?:\.\d+)?)\s*BPM/i);
+  const setcpm = code.match(/setcpm\(\s*([\d.]+)\s*(\/\s*4)?\s*\)/i);
+  const bpm = documentedBpm
+    ? Number(documentedBpm[1])
+    : setcpm
+      ? Number(setcpm[1]) * (setcpm[2] ? 1 : 4)
+      : 120;
+
+  return {
+    id: `generated:${slug}`,
+    name: title,
+    description,
+    bpm,
+    code,
+    createdAt: updatedAt,
+    updatedAt
+  };
+}
+
+async function readGeneratedSong(generatedMusicDir, slug) {
+  if (!GENERATED_SLUG_PATTERN.test(slug)) return null;
+
+  const songPath = join(generatedMusicDir, slug, 'song.strudel');
+  try {
+    const fileInfo = await stat(songPath);
+    if (!fileInfo.isFile()) return null;
+    const code = await readFile(songPath, 'utf8');
+    if (!code.trim()) return null;
+    let analysis = '';
+    try {
+      analysis = await readFile(join(generatedMusicDir, slug, 'analysis.md'), 'utf8');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    return generatedSongMetadata(slug, code, analysis, fileInfo.mtime.toISOString());
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return null;
+    throw error;
+  }
+}
+
+async function listGeneratedSongs(generatedMusicDir) {
+  let entries;
+  try {
+    entries = await readdir(generatedMusicDir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+
+  const songs = await Promise.all(entries
+    .filter((entry) => entry.isDirectory() && GENERATED_SLUG_PATTERN.test(entry.name))
+    .map((entry) => readGeneratedSong(generatedMusicDir, entry.name)));
+  return songs.filter(Boolean).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
 export async function createApp(options = {}) {
   const dataDir = resolve(options.dataDir ?? process.env.SCORE_DATA_DIR ?? DEFAULT_DATA_DIR);
+  const generatedMusicDir = resolve(options.generatedMusicDir ?? process.env.GENERATED_MUSIC_DIR ?? DEFAULT_GENERATED_MUSIC_DIR);
   await mkdir(dataDir, { recursive: true });
 
   if ((await readdir(dataDir)).filter((name) => name.endsWith('.json')).length === 0) {
@@ -77,6 +140,27 @@ export async function createApp(options = {}) {
   });
 
   app.get('/api/health', (_request, response) => response.json({ status: 'ok' }));
+
+  app.get('/api/generated-music', async (_request, response, next) => {
+    try {
+      const songs = await listGeneratedSongs(generatedMusicDir);
+      response.set('Cache-Control', 'no-store');
+      response.json(songs.map(({ code, ...metadata }) => ({ ...metadata, codeLength: code.length })));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get('/api/generated-music/:slug', async (request, response, next) => {
+    try {
+      const song = await readGeneratedSong(generatedMusicDir, request.params.slug);
+      if (!song) return response.status(404).json({ message: '找不到這首生成音樂' });
+      response.set('Cache-Control', 'no-store');
+      response.json(song);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   app.get('/api/scores', async (_request, response, next) => {
     try {

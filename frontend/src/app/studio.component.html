@@ -11,7 +11,7 @@
         Embed
       </button>
       <button class="primary-button" type="button" (click)="save()" [disabled]="busy() || !dirty()">
-        {{ busy() ? 'Working…' : 'Save pattern' }}
+        {{ busy() ? 'Working…' : (selectedLibraryId()?.startsWith('generated:') ? 'Save to library' : 'Save pattern') }}
       </button>
       <div class="avatar" aria-hidden="true">S</div>
     </div>
@@ -24,7 +24,10 @@
           <span class="eyebrow">LIBRARY</span>
           <h1>Your patterns</h1>
         </div>
-        <button class="icon-button add-button" type="button" (click)="newScore()" title="新增樂譜">+</button>
+        <div class="heading-actions">
+          <button class="icon-button refresh-button" type="button" (click)="refresh()" [disabled]="busy()" title="重新載入樂譜" aria-label="重新載入樂譜">↻</button>
+          <button class="icon-button add-button" type="button" (click)="newScore()" title="新增樂譜">+</button>
+        </div>
       </div>
 
       <label class="search-box">
@@ -38,7 +41,7 @@
           <button
             type="button"
             class="score-item"
-            [class.active]="score.id === selectedId()"
+            [class.active]="score.id === selectedLibraryId()"
             (click)="select(score.id)"
           >
             <span class="score-icon" aria-hidden="true">
@@ -46,7 +49,7 @@
             </span>
             <span class="score-copy">
               <strong>{{ score.name }}</strong>
-              <small>{{ score.bpm }} BPM · {{ formatDate(score.updatedAt) }}</small>
+              <small>{{ score.bpm }} BPM · {{ score.source === 'generated' ? 'GENERATED FILE' : formatDate(score.updatedAt) }}</small>
             </span>
             <span class="score-menu">•••</span>
           </button>
@@ -58,7 +61,7 @@
       <div class="library-footer">
         <span><b>{{ scores().length }}</b> PATTERNS</span>
         <span class="storage-dot"></span>
-        <span>LOCAL STORAGE</span>
+        <span>{{ generatedCount() }} GENERATED FILES</span>
       </div>
     </aside>
 

@@ -22,8 +22,10 @@ services:
     environment:
       PORT: 3000
       SCORE_DATA_DIR: /app/data/scores
+      GENERATED_MUSIC_DIR: /workspace/generated-music
     volumes:
       - score-data:/app/data/scores
+      - ./generated-music:/workspace/generated-music:ro
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 5s

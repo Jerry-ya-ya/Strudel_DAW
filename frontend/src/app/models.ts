@@ -6,6 +6,7 @@ export interface ScoreSummary {
   codeLength: number;
   createdAt: string;
   updatedAt: string;
+  source?: 'saved' | 'generated';
 }
 
 export interface Score extends Omit<ScoreSummary, 'codeLength'> {

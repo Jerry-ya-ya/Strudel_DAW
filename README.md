@@ -6,6 +6,7 @@
 
 - Strudel live-coding 編輯器，支援 `Ctrl + Enter` 即時播放與停止
 - 樂譜完整 CRUD、搜尋、複製、名稱／描述／BPM 中繼資料
+- 動態讀取 `generated-music/<歌曲資料夾>/song.strudel`，新增檔案後重新整理清單即可載入；修改後可另存到 DAW 樂譜庫
 - `/embed/:id` 精簡播放器與 iframe 程式碼產生器
 - 前端使用 `http://localhost:4203`，Docker 與本機模式皆提供 Angular 熱更新
 - Express 檔案型 API；不需要外部資料庫
@@ -56,6 +57,8 @@ pnpm test
 | 方法 | 路徑 | 用途 |
 | --- | --- | --- |
 | `GET` | `/api/health` | 健康檢查 |
+| `GET` | `/api/generated-music` | 動態列出 `generated-music/` 中的歌曲 |
+| `GET` | `/api/generated-music/:slug` | 讀取生成歌曲的 Strudel 程式碼 |
 | `GET` | `/api/scores` | 取得樂譜摘要清單 |
 | `GET` | `/api/scores/:id` | 取得單份樂譜 |
 | `POST` | `/api/scores` | 建立樂譜 |
@@ -85,6 +88,7 @@ pnpm test
 
 - 本機執行：預設寫入 `backend/data/scores/*.json`
 - Docker：寫入 `/app/data/scores`，由 `score-data` named volume 保存
+- `generated-music/`：Docker 以唯讀方式掛載給後端；每次呼叫生成歌曲清單時重新掃描，因此不需重建容器
 - 可用 `SCORE_DATA_DIR` 環境變數改變後端存放位置
 
 請勿把執行期樂譜加入 Git；`.gitignore` 已忽略整個 `backend/data/`。

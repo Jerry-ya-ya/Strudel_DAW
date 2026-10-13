@@ -11,3 +11,7 @@
 ## 2026/10/05
 
 - Expand the explicit-only Strudel composition workflow with complete-song artifacts and a 125-genre catalog, while improving the Angular DAW's studio and iframe volume controls, hot reload, and Docker-backed score API on port 4203.
+
+## 2026/10/13
+
+- Load generated Strudel songs dynamically from the mounted generated-music folder and merge them into the DAW library with refresh and save-as support.
