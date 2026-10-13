@@ -15,3 +15,5 @@
 ## 2026/10/13
 
 - Load generated Strudel songs dynamically from the mounted generated-music folder and merge them into the DAW library with refresh and save-as support.
+
+- Add a cycle-based playback timeline with live progress and scrubbing to seek within arranged Strudel songs.

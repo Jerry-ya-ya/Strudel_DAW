@@ -96,7 +96,22 @@
             <div><strong>{{ engine.state() === 'playing' ? 'LIVE' : 'READY' }}</strong><small>{{ engine.message() }}</small></div>
           </div>
         </div>
-        <div class="time-display"><small>CYCLE</small><strong>{{ engine.state() === 'playing' ? '01.1' : '00.0' }}</strong></div>
+        <div class="cycle-progress">
+          <label class="cycle-progress-label" for="cycle-seek"><small>SEEK CYCLE</small><strong>{{ engine.currentCycle() | number:'1.0-0' }} / {{ engine.totalCycles() }}</strong></label>
+          <input
+            id="cycle-seek"
+            class="cycle-progress-track"
+            type="range"
+            min="0"
+            step="0.01"
+            [max]="engine.totalCycles()"
+            [value]="engine.currentCycle()"
+            [style.--progress]="engine.cycleProgress() + '%'"
+            [attr.aria-valuetext]="'Cycle ' + (engine.currentCycle() | number:'1.0-0') + ' of ' + engine.totalCycles()"
+            (input)="previewCycleSeek($event)"
+            (change)="commitCycleSeek($event)"
+          />
+        </div>
         <div class="meter" [class.active]="engine.state() === 'playing'" aria-hidden="true">
           @for (bar of meterBars; track bar) { <i [style.--bar]="bar"></i> }
         </div>
@@ -113,8 +128,8 @@
           <textarea
             aria-label="Strudel 程式碼編輯器"
             spellcheck="false"
-            [(ngModel)]="draft.code"
-            (ngModelChange)="markDirty()"
+            [ngModel]="draft.code"
+            (ngModelChange)="onCodeChange($event)"
             (keydown.control.enter)="play(); $event.preventDefault()"
           ></textarea>
         </div>

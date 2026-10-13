@@ -105,6 +105,7 @@ export class StudioComponent implements OnInit {
       this.selectedLibraryId.set(id);
       this.selectedId.set(isGenerated ? null : score.id);
       this.draft = this.toInput(score);
+      this.engine.setTimelineCode(score.code);
       this.dirty.set(false);
       this.confirmDelete.set(false);
     } catch (error) {
@@ -120,6 +121,7 @@ export class StudioComponent implements OnInit {
     this.selectedId.set(null);
     this.selectedLibraryId.set(null);
     this.draft = { ...NEW_SCORE };
+    this.engine.setTimelineCode(this.draft.code);
     this.dirty.set(true);
     this.notice.set('新樂譜尚未儲存');
     this.confirmDelete.set(false);
@@ -198,6 +200,24 @@ export class StudioComponent implements OnInit {
       await this.engine.play(this.draft.code);
     } catch (error) {
       this.fail(error, 'Strudel 執行失敗，請檢查樂譜語法');
+    }
+  }
+
+  previewCycleSeek(event: Event): void {
+    this.engine.previewSeek(Number((event.target as HTMLInputElement).value));
+  }
+
+  onCodeChange(code: string): void {
+    this.draft.code = code;
+    this.markDirty();
+    this.engine.setTimelineCode(code);
+  }
+
+  async commitCycleSeek(event: Event): Promise<void> {
+    try {
+      await this.engine.seekToCycle(Number((event.target as HTMLInputElement).value));
+    } catch (error) {
+      this.fail(error, '無法跳到指定段落');
     }
   }
 
