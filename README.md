@@ -7,7 +7,7 @@
 - Strudel live-coding 編輯器，支援 `Ctrl + Enter` 即時播放與停止
 - 樂譜完整 CRUD、搜尋、複製、名稱／描述／BPM 中繼資料
 - `/embed/:id` 精簡播放器與 iframe 程式碼產生器
-- Angular 前端固定使用 `http://localhost:4100`
+- 前端使用 `http://localhost:4203`，Docker 與本機模式皆提供 Angular 熱更新
 - Express 檔案型 API；不需要外部資料庫
 - 前、後端各自 Docker 化，以 Docker Compose 一鍵啟動
 - 樂譜存放目錄 `backend/data/` 已由 Git 忽略；Docker 使用 named volume `score-data`
@@ -18,7 +18,7 @@
 docker compose up --build
 ```
 
-開啟 [http://localhost:4100](http://localhost:4100)。後端只暴露在 Compose 內部網路，由 Nginx 將 `/api` 反向代理至後端。
+開啟 [http://localhost:4203](http://localhost:4203)。Docker 會啟動 Angular 開發伺服器，前端檔案修改後會自動更新；`/api` 由開發伺服器轉送至後端。後端另綁定本機 `127.0.0.1:3000`。
 
 停止服務：
 
@@ -37,9 +37,12 @@ pnpm install
 pnpm dev
 ```
 
-- 前端：http://localhost:4100
+- 前端（熱更新）：http://localhost:4203
 - 後端：http://localhost:3000
 - Angular dev server 會將 `/api` proxy 到後端
+- Docker 與本機模式共用 `4203`，一次啟動其中一種即可
+
+若後端已透過 Docker 啟動，也可只執行 `pnpm --filter ./frontend dev`，沿用 Docker 後端。
 
 其他指令：
 
@@ -67,10 +70,10 @@ pnpm test
 
 ```html
 <iframe
-  src="http://localhost:4100/embed/SCORE_ID"
+  src="http://localhost:4203/embed/SCORE_ID"
   title="Strudel player"
   width="720"
-  height="420"
+  height="540"
   allow="autoplay"
   loading="lazy"
 ></iframe>

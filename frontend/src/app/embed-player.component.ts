@@ -3,9 +3,11 @@ import { firstValueFrom } from 'rxjs';
 import { Score } from './models';
 import { ScoreApiService } from './score-api.service';
 import { StrudelEngineService } from './strudel-engine.service';
+import { VolumeControlComponent } from './volume-control.component';
 
 @Component({
   selector: 'app-embed-player',
+  imports: [VolumeControlComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './embed-player.component.html',
   styleUrl: './embed-player.component.css'
@@ -39,4 +41,3 @@ export class EmbedPlayerComponent implements OnInit {
     }
   }
 }
-

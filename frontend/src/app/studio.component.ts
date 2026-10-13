@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { Score, ScoreInput, ScoreSummary } from './models';
 import { ScoreApiService } from './score-api.service';
 import { StrudelEngineService } from './strudel-engine.service';
+import { VolumeControlComponent } from './volume-control.component';
 
 const NEW_SCORE: ScoreInput = {
   name: 'Untitled pattern',
@@ -23,7 +24,7 @@ const NEW_SCORE: ScoreInput = {
 
 @Component({
   selector: 'app-studio',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, VolumeControlComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './studio.component.html',
   styleUrl: './studio.component.css'
@@ -59,7 +60,7 @@ export class StudioComponent implements OnInit {
 
   readonly embedCode = computed(() =>
     this.embedUrl()
-      ? `<iframe src="${this.embedUrl()}" title="Strudel player" width="720" height="420" allow="autoplay" loading="lazy"></iframe>`
+      ? `<iframe src="${this.embedUrl()}" title="Strudel player" width="720" height="540" allow="autoplay" loading="lazy"></iframe>`
       : ''
   );
 
@@ -216,4 +217,3 @@ export class StudioComponent implements OnInit {
     this.error.set(apiMessage ?? (error instanceof Error ? error.message : fallback));
   }
 }
-

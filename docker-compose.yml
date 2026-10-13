@@ -4,7 +4,10 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
-      - "4100:80"
+      - "127.0.0.1:4203:4203"
+    volumes:
+      - ./frontend/src:/workspace/frontend/src
+      - ./frontend/public:/workspace/frontend/public
     depends_on:
       backend:
         condition: service_healthy
@@ -14,6 +17,8 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    ports:
+      - "127.0.0.1:3000:3000"
     environment:
       PORT: 3000
       SCORE_DATA_DIR: /app/data/scores
@@ -28,4 +33,3 @@ services:
 
 volumes:
   score-data:
-

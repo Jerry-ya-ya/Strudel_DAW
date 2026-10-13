@@ -2,6 +2,7 @@ declare module '@strudel/web' {
   export interface StrudelInitOptions {
     miniAllStrings?: boolean;
     prebake?: () => void | Promise<void>;
+    outputNode?: AudioNode;
     [key: string]: unknown;
   }
 
@@ -9,5 +10,6 @@ declare module '@strudel/web' {
   export function evaluate(code: string, autoplay?: boolean): Promise<unknown>;
   export function hush(): void;
   export function getAudioContext(): AudioContext;
+  export function getSuperdoughAudioController(): { output: { destinationGain: GainNode } };
   export function samples(source: string, baseUrl?: string): Promise<unknown>;
 }

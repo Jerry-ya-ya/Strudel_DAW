@@ -1,0 +1,13 @@
+:host { display: block; min-width: 0; }
+.volume-control { display: grid; gap: 5px; padding: 0 12px; }
+.volume-label { color: #575e67; font: 8px 'DM Mono', monospace; letter-spacing: .13em; }
+.volume-actions { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.volume-button { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid #343b43; border-radius: 7px; background: #1b2025; color: #b6c3a3; cursor: pointer; }
+.volume-button:hover:not(:disabled) { border-color: var(--acid, #c8f452); color: var(--acid, #c8f452); }
+.volume-button:focus-visible { outline: 2px solid var(--acid, #c8f452); outline-offset: 2px; }
+.volume-button:disabled { opacity: .35; cursor: not-allowed; }
+.volume-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.volume-value { min-width: 33px; color: #b8bec4; text-align: center; font: 10px 'DM Mono', monospace; }
+:host(.embed-volume-control) .volume-control { grid-template-columns: 1fr auto; align-items: center; padding: 0 22px 16px; }
+:host(.embed-volume-control) .volume-actions { justify-content: flex-end; gap: 10px; }
+:host(.embed-volume-control) .volume-button { width: 38px; height: 38px; }

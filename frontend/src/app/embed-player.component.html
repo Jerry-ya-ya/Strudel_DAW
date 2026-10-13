@@ -18,6 +18,7 @@
           @for (item of [1,2,3,4,5,6,7,8]; track item) { <i [style.--n]="item"></i> }
         </div>
       </div>
+      <app-volume-control class="embed-volume-control" label="VOLUME" />
       <footer><span class="state-dot" [class.live]="engine.state() === 'playing'"></span>{{ engine.message() }}<a href="/" target="_blank" rel="noopener">Edit in Studio ↗</a></footer>
     </section>
   } @else if (error()) {
@@ -26,4 +27,3 @@
     <section class="player-card loading-card"><div class="spinner"></div><p>Loading pattern…</p></section>
   }
 </main>
-

@@ -97,7 +97,7 @@
         <div class="meter" [class.active]="engine.state() === 'playing'" aria-hidden="true">
           @for (bar of meterBars; track bar) { <i [style.--bar]="bar"></i> }
         </div>
-        <div class="master"><small>MASTER</small><div class="master-track"><span></span></div><b>0.0</b></div>
+        <app-volume-control class="master" />
       </section>
 
       <section class="code-card">
@@ -143,4 +143,3 @@
     </div>
   }
 </div>
-
